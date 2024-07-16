@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "name": "excel-data-comparator",
+  "version": "1.0.0",
+  "description": "Excel Data Comparator adalah aplikasi untuk membandingkan dua file Excel dan mengidentifikasi perbedaan data secara otomatis.",
+  "main": "main.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node main.js"
+  },
+  "keywords": [
+    "excel",
+    "data",
+    "comparison",
+    "differential"
+  ],
+  "author": "Sahal Fajri",
+  "license": "ISC"
+}
