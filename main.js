@@ -1,41 +1,34 @@
 const XLSX = require('xlsx');
 
-// const fileNameFullData = './excel/DATA CUST YG SUDAH ORDER BERAS.xlsx';
-// const fileNameTheData = './excel/DAFTAR PELANGGAN BABY SHOP.xlsx';
-
-function readDatafile(fileName, sheetName = 'Sheet1', haveHeader = 1) {
-  const workbook = XLSX.readFile(fileName);
+function readDatafile(fileName, sheetName = 'Sheet1', headerAbsent = 1) {
+  const workbook = XLSX.readFile('./excel/' + fileName);
   const worksheet = workbook.Sheets[sheetName];
-
-  const data = XLSX.utils.sheet_to_json(worksheet, { header: haveHeader });
+  const data = XLSX.utils.sheet_to_json(worksheet, { header: headerAbsent });
   return data;
 }
 
-function getDataWIthHeaderA(dataObject) {
-  const dataArray = dataObject.map(data => {
-    return data.A;
-  })
-
-  return dataArray;
+function arraysToData(arrays) {
+  let data = arrays.map((array) => array[0])
+  return data;
 }
 
-const fileName = 'TestExcel.xlsx';
+const fileNameFull = 'DaftarPelangganFull.xlsx';
+const fileNameOrder = 'DaftarCustSudahOrder.xlsx';
 
-const dataFull = readDatafile(fileName, 'Sheet1', "A");
-const dataArray = getDataWIthHeaderA(dataFull);
+const dataFull = readDatafile(fileNameFull, 'Daftar Pelanggan', 0);
+let dataOder = readDatafile(fileNameOrder, 'Sheet1');
 
-console.log(dataArray);
+dataOder = arraysToData(dataOder)
 
+function compareExcelFiles(dataFull, columnDataFull, dataList) {
+  let filteredData = dataFull.filter((data) => !dataList.includes(data[columnDataFull]));
+  return filteredData;
+}
 
-// const hasil = dataA.map(rowA => {
-//   const ada = dataB.some(rowB => rowB[1] === rowA[0]);
-//   return { ...rowA, Ada: ada };
-// });
+const hasil = compareExcelFiles(dataFull, 'Nama', dataOder);
 
-// console.log(hasil);
+const updatedWorksheet = XLSX.utils.json_to_sheet(hasil);
+const updatedWorkbook = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(updatedWorkbook, updatedWorksheet, 'Data_dengan_Hasil');
 
-// const updatedWorksheet = XLSX.utils.json_to_sheet(hasil);
-// const updatedWorkbook = XLSX.utils.book_new();
-// XLSX.utils.book_append_sheet(updatedWorkbook, updatedWorksheet, 'Data_dengan_Hasil');
-
-// XLSX.writeFile(updatedWorkbook, 'data_dengan_hasil.xlsx');
+XLSX.writeFile(updatedWorkbook, 'data_dengan_hasil.xlsx');
