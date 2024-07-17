@@ -3,13 +3,15 @@ const XLSX = require('xlsx');
 function readDatafile(fileName, sheetName = 'Sheet1', headerAbsent = 1) {
   const workbook = XLSX.readFile('./excel/' + fileName);
   const worksheet = workbook.Sheets[sheetName];
-  const data = XLSX.utils.sheet_to_json(worksheet, { header: headerAbsent });
-  return data;
+  return XLSX.utils.sheet_to_json(worksheet, { header: headerAbsent });
 }
 
 function arraysToData(arrays) {
-  let data = arrays.map((array) => array[0])
-  return data;
+  return arrays.map((array) => array[0]);
+}
+
+function compareExcelFiles(dataFull, columnDataFull, dataList) {
+  return dataFull.filter((data) => !dataList.includes(data[columnDataFull]));
 }
 
 const fileNameFull = 'DaftarPelangganFull.xlsx';
@@ -18,12 +20,7 @@ const fileNameOrder = 'DaftarCustSudahOrder.xlsx';
 const dataFull = readDatafile(fileNameFull, 'Daftar Pelanggan', 0);
 let dataOder = readDatafile(fileNameOrder, 'Sheet1');
 
-dataOder = arraysToData(dataOder)
-
-function compareExcelFiles(dataFull, columnDataFull, dataList) {
-  let filteredData = dataFull.filter((data) => !dataList.includes(data[columnDataFull]));
-  return filteredData;
-}
+dataOder = arraysToData(dataOder);
 
 const hasil = compareExcelFiles(dataFull, 'Nama', dataOder);
 
