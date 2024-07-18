@@ -15,6 +15,21 @@
       max-width: 900px;
       margin: auto;
     }
+
+    .drop-zone {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .drop-zone.dragover {
+      background-color: #e0e7ff;
+    }
   </style>
 </head>
 
@@ -27,7 +42,7 @@
         <!-- Kolom File Data Full -->
         <div>
           <label for="file-upload-full" class="block text-sm font-medium text-gray-700">File Data Full</label>
-          <div class="mt-2 flex justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
+          <div id="drop-zone-full" class="drop-zone mt-2">
             <div id="file-name-full" class="text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -46,6 +61,8 @@
               <p class="text-xs text-gray-500">xlsx up to 10MB</p>
             </div>
           </div>
+
+          <div id="error-message-full" class="mt-2 text-sm text-red-600"></div>
 
           <div class="mt-4 flex items-start">
             <div class="flex items-center h-5">
@@ -79,7 +96,7 @@
         <!-- Kolom File Data Order -->
         <div>
           <label for="file-upload-order" class="block text-sm font-medium text-gray-700">File Data Order</label>
-          <div class="mt-2 flex justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
+          <div id="drop-zone-order" class="drop-zone mt-2">
             <div id="file-name-order" class="text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -98,6 +115,8 @@
               <p class="text-xs text-gray-500">xlsx up to 10MB</p>
             </div>
           </div>
+
+          <div id="error-message-order" class="mt-2 text-sm text-red-600"></div>
 
           <div class="mt-4 flex items-start">
             <div class="flex items-center h-5">
@@ -139,36 +158,58 @@
   </div>
 
   <script>
+    // Handle drag and drop functionality
     function handleFileUpload(type) {
       const fileInput = document.getElementById(`file-upload-${type}`);
+      const file = fileInput.files[0];
       const fileNameDisplay = document.getElementById(`file-name-${type}`);
-      const hasHeaderInput = document.getElementById(`has-header-${type}`);
+      const errorMessage = document.getElementById(`error-message-${type}`);
+      const hasHeaderCheckbox = document.getElementById(`has-header-${type}`);
+      const sheetSelect = document.getElementById(`sheet-${type}`);
       const columnInput = document.getElementById(`column-${type}`);
 
-      if (fileInput.files.length > 0) {
-        while (fileNameDisplay.firstChild) {
-          fileNameDisplay.removeChild(fileNameDisplay.firstChild);
+      if (file) {
+        if (file.size <= 10485760 && file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+          fileNameDisplay.innerHTML = `<p>${file.name}</p>`;
+          errorMessage.innerText = '';
+          hasHeaderCheckbox.disabled = false;
+          sheetSelect.disabled = false;
+          columnInput.disabled = false;
+        } else {
+          errorMessage.innerText = 'Invalid file type or size. Please upload an xlsx file up to 10MB.';
+          fileInput.value = '';
         }
-        const paragraph = document.createElement('p');
-        paragraph.textContent = `File: ${fileInput.files[0].name}`;
-        paragraph.classList.add('text-sm', 'text-gray-600', 'mt-2');
-        fileNameDisplay.appendChild(paragraph);
-        hasHeaderInput.disabled = false;
-        columnInput.disabled = false;
-      } else {
-        fileNameDisplay.textContent = '';
-        hasHeaderInput.disabled = true;
-        hasHeaderInput.checked = false;
-        toggleSheetName(type); // This will disable the sheet input
-        columnInput.disabled = true;
       }
     }
 
     function toggleSheetName(type) {
-      const hasHeaderInput = document.getElementById(`has-header-${type}`);
-      const sheetInput = document.getElementById(`sheet-${type}`);
-      sheetInput.disabled = !hasHeaderInput.checked;
+      const hasHeaderCheckbox = document.getElementById(`has-header-${type}`);
+      const sheetSelect = document.getElementById(`sheet-${type}`);
+      const columnInput = document.getElementById(`column-${type}`);
+
+      sheetSelect.disabled = !hasHeaderCheckbox.checked;
+      columnInput.disabled = !hasHeaderCheckbox.checked;
     }
+
+    document.querySelectorAll('.drop-zone').forEach((dropZoneElement) => {
+      dropZoneElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZoneElement.classList.add('dragover');
+      });
+
+      dropZoneElement.addEventListener('dragleave', () => {
+        dropZoneElement.classList.remove('dragover');
+      });
+
+      dropZoneElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZoneElement.classList.remove('dragover');
+        const type = dropZoneElement.id.split('-')[2];
+        const fileInput = document.getElementById(`file-upload-${type}`);
+        fileInput.files = e.dataTransfer.files;
+        handleFileUpload(type);
+      });
+    });
   </script>
 </body>
 
